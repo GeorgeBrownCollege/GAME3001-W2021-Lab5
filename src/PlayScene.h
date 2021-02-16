@@ -6,6 +6,7 @@
 #include "Button.h"
 #include "Label.h"
 #include "Obstacle.h"
+#include "ship.h"
 #include "SpaceShip.h"
 #include "Target.h"
 #include "Tile.h"
@@ -30,6 +31,7 @@ private:
 	glm::vec2 m_mousePosition;
 
 	Target* m_pTarget;
+	Ship* m_pShip;
 
 	// Pathfinding functions and objects
 	void m_buildGrid();

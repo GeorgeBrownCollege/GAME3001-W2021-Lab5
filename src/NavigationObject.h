@@ -9,7 +9,7 @@ public:
 	// Constructor
 	NavigationObject();
 
-	// Destrcutor
+	// Destructor
 	~NavigationObject();
 	
 	// Inhertied from DisplayObject

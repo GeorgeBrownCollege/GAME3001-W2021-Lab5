@@ -64,8 +64,15 @@ void PlayScene::start()
 	m_guiTitle = "Play Scene";
 
 	m_buildGrid();
-
 	auto offset = glm::vec2(Config::TILE_SIZE * 0.5f, Config::TILE_SIZE * 0.5f);
+	
+	// add the ship to the scene as a start point
+	m_pShip = new Ship();
+	m_pShip->getTransform()->position = m_getTile(1, 3)->getTransform()->position + offset;
+	m_pShip->setGridPosition(1, 3);
+	addChild(m_pShip);
+	
+	// added the target to the scene a goal
 	m_pTarget = new Target();
 	m_pTarget->getTransform()->position = m_getTile(15, 11)->getTransform()->position + offset;
 	m_pTarget->setGridPosition(15, 11);
