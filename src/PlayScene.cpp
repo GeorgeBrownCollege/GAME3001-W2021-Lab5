@@ -71,12 +71,14 @@ void PlayScene::start()
 	m_pShip = new Ship();
 	m_pShip->getTransform()->position = m_getTile(1, 3)->getTransform()->position + offset;
 	m_pShip->setGridPosition(1, 3);
+	m_getTile(1, 3)->setTileStatus(START);
 	addChild(m_pShip);
 	
 	// added the target to the scene a goal
 	m_pTarget = new Target();
 	m_pTarget->getTransform()->position = m_getTile(15, 11)->getTransform()->position + offset;
 	m_pTarget->setGridPosition(15, 11);
+	m_getTile(15, 11)->setTileStatus(GOAL);
 	addChild(m_pTarget);
 
 	m_computeTileCosts();
@@ -128,9 +130,10 @@ void PlayScene::GUI_Function()
 		}
 
 		SDL_RenderClear(Renderer::Instance()->getRenderer());
+		m_getTile(m_pShip->getGridPosition())->setTileStatus(UNVISITED);
 		m_pShip->getTransform()->position = m_getTile(startPosition[0], startPosition[1])->getTransform()->position + offset;
 		m_pShip->setGridPosition(startPosition[0], startPosition[1]);
-
+		m_getTile(m_pShip->getGridPosition())->setTileStatus(START);
 		SDL_SetRenderDrawColor(Renderer::Instance()->getRenderer(), 255, 255, 255, 255);
 		SDL_RenderPresent(Renderer::Instance()->getRenderer());
 	}
@@ -145,8 +148,10 @@ void PlayScene::GUI_Function()
 		}
 		
 		SDL_RenderClear(Renderer::Instance()->getRenderer());
+		m_getTile(m_pTarget->getGridPosition())->setTileStatus(UNVISITED);
 		m_pTarget->getTransform()->position = m_getTile(targetPosition[0], targetPosition[1])->getTransform()->position + offset;
 		m_pTarget->setGridPosition(targetPosition[0], targetPosition[1]);
+		m_getTile(m_pTarget->getGridPosition())->setTileStatus(GOAL);
 		m_computeTileCosts();
 		SDL_SetRenderDrawColor(Renderer::Instance()->getRenderer(), 255, 255, 255, 255);
 		SDL_RenderPresent(Renderer::Instance()->getRenderer());
@@ -156,7 +161,7 @@ void PlayScene::GUI_Function()
 	
 	if(ImGui::Button("Start"))
 	{
-		
+		m_findShortestPath();
 	}
 
 	ImGui::SameLine();
@@ -272,6 +277,82 @@ void PlayScene::m_computeTileCosts()
 	}
 }
 
+void PlayScene::m_findShortestPath()
+{
+	// Step 1 - Add Start position to the open list
+	auto startTile = m_getTile(m_pShip->getGridPosition());
+	startTile->setTileStatus(OPEN);
+	m_pOpenList.push_back(startTile);
+
+	bool goalFound = false;
+
+	// Step 2 - Loop until the OpenList is empty or the Goal is found
+	while(!m_pOpenList.empty() && !goalFound)
+	{
+		auto min = INFINITY;
+		Tile* minTile;
+		int minTileIndex = 0;
+		int count = 0;
+
+		std::vector<Tile*> neighbourList;
+		for (int index = 0; index < NUM_OF_NEIGHBOUR_TILES; ++index)
+		{
+			neighbourList.push_back(m_pOpenList[0]->getNeighbourTile(NeighbourTile(index)));
+		}
+
+		for (auto neighbour : neighbourList)
+		{
+			if(neighbour->getTileStatus() != GOAL)
+			{
+				if(neighbour->getTileCost() < min)
+				{
+					min = neighbour->getTileCost();
+					minTile = neighbour;
+					minTileIndex = count;
+				}
+				count++;
+			}
+			else
+			{
+				minTile = neighbour;
+				m_pPathList.push_back(minTile);
+				goalFound = true;
+				break;
+			}
+		}
+
+		// remove the reference of the current tile in the open list
+		m_pPathList.push_back(m_pOpenList[0]);
+		m_pOpenList.pop_back(); // empties the open list
+
+		// add the minTile to the openList
+		m_pOpenList.push_back(minTile);
+		neighbourList.erase(neighbourList.begin() + minTileIndex);
+
+		// push all remaining neighbours onto the closed list
+		for (auto neighbour : neighbourList)
+		{
+			if(neighbour->getTileStatus() == UNVISITED)
+			{
+				neighbour->setTileStatus(CLOSED);
+				m_pClosedList.push_back(neighbour);
+			}
+		}
+	}
+
+	m_displayPathList();
+	
+}
+
+void PlayScene::m_displayPathList()
+{
+	for (auto node : m_pPathList)
+	{
+		std::cout << "(" << node->getGridPosition().x << ", " << node->getGridPosition().y << ")" << std::endl;
+	}
+	std::cout << "Path Length: " << m_pPathList.size() << std::endl;
+}
+
 void PlayScene::m_setGridEnabled(bool state) 
 {
 	for (auto tile : m_pGrid)
@@ -288,5 +369,12 @@ void PlayScene::m_setGridEnabled(bool state)
 
 Tile* PlayScene::m_getTile(const int col, const int row)
 {
+	return m_pGrid[(row * Config::COL_NUM) + col];
+}
+
+Tile* PlayScene::m_getTile(const glm::vec2 grid_position)
+{
+	const auto col = grid_position.x;
+	const auto row = grid_position.y;
 	return m_pGrid[(row * Config::COL_NUM) + col];
 }
