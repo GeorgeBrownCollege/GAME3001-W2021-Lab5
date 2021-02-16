@@ -65,6 +65,7 @@ void PlayScene::start()
 
 	m_buildGrid();
 	auto offset = glm::vec2(Config::TILE_SIZE * 0.5f, Config::TILE_SIZE * 0.5f);
+	currentHeuristic = EUCLIDEAN;
 	
 	// add the ship to the scene as a start point
 	m_pShip = new Ship();
@@ -93,7 +94,7 @@ void PlayScene::GUI_Function()
 	// See examples by uncommenting the following - also look at imgui_demo.cpp in the IMGUI filter
 	//ImGui::ShowDemoWindow();
 	
-	ImGui::Begin("GAME3001 - Lab 4", NULL, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoMove);
+	ImGui::Begin("GAME3001 - Lab 5", NULL, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_MenuBar);
 
 	static bool isGridEnabled = false;
 	if(ImGui::Checkbox("Grid Enabled", &isGridEnabled))
@@ -219,9 +220,24 @@ void PlayScene::m_buildGrid()
 
 void PlayScene::m_computeTileCosts()
 {
+	float distance, dx, dy;
+	
 	for (auto tile : m_pGrid)
 	{
-		auto distance = Util::distance(m_pTarget->getGridPosition(), tile->getGridPosition());
+		switch(currentHeuristic)
+		{
+		case MANHATTAN:
+			// Manhattan Distance
+			dx = abs(tile->getGridPosition().x - m_pTarget->getGridPosition().x);
+			dy = abs(tile->getGridPosition().y - m_pTarget->getGridPosition().y);
+			distance = dx + dy;
+			break;
+		case EUCLIDEAN:
+			// Euclidean Distance
+			distance = Util::distance(m_pTarget->getGridPosition(), tile->getGridPosition());
+			break;
+		}
+		
 		tile->setTileCost(distance);
 	}
 }

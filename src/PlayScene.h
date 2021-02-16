@@ -4,6 +4,7 @@
 
 #include "Scene.h"
 #include "Button.h"
+#include "Heuristic.h"
 #include "Label.h"
 #include "Obstacle.h"
 #include "ship.h"
@@ -43,6 +44,9 @@ private:
 
 	// convenience functions
 	Tile* m_getTile(int col, int row);
+
+	// heuristic
+	Heuristic currentHeuristic;
 	
 };
 
