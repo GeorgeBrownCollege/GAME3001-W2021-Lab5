@@ -327,6 +327,7 @@ void PlayScene::m_findShortestPath()
 
 		// add the minTile to the openList
 		m_pOpenList.push_back(minTile);
+		minTile->setTileStatus(OPEN);
 		neighbourList.erase(neighbourList.begin() + minTileIndex);
 
 		// push all remaining neighbours onto the closed list
