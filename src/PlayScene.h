@@ -30,6 +30,7 @@ private:
 	void GUI_Function();
 	std::string m_guiTitle;
 	glm::vec2 m_mousePosition;
+	bool m_isGridEnabled;
 
 	Target* m_pTarget;
 	Ship* m_pShip;
@@ -41,6 +42,7 @@ private:
 	void m_displayPathList();
 	
 	void m_setGridEnabled(bool state);
+	bool m_getGridEnabled() const;
 	std::vector<Tile*> m_pGrid;
 
 	// convenience functions
@@ -54,7 +56,13 @@ private:
 	std::vector<Tile*> m_pOpenList;
 	std::vector<Tile*> m_pClosedList;
 	std::vector<Tile*> m_pPathList;
+
+	void m_moveShip();
+	int moveCounter = 0;
+	bool m_shipIsMoving = false;
 	
 };
+
+
 
 #endif /* defined (__PLAY_SCENE__) */
